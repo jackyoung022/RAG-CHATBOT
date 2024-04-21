@@ -1,0 +1,26 @@
+2024-04-02 09:13:01,705 - app - INFO - User input: 总结漏洞
+2024-04-02 09:13:01,732 - app - INFO - New file detected: .DS_Store
+2024-04-02 09:13:01,734 - app - ERROR - Exception on /chat [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/flask/app.py", line 1463, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.10/site-packages/flask/app.py", line 872, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.10/site-packages/flask/app.py", line 870, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.10/site-packages/flask/app.py", line 855, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "/app/app.py", line 39, in chat
+    check_and_update_files()  # 检查文件夹中的新文件并更新数据库
+  File "/app/app.py", line 69, in check_and_update_files
+    gpt_app.add(file_path)
+  File "/usr/local/lib/python3.10/site-packages/embedchain/embedchain.py", line 168, in add
+    data_type = detect_datatype(source)
+  File "/usr/local/lib/python3.10/site-packages/embedchain/utils/misc.py", line 348, in detect_datatype
+    if os.path.exists(source) and is_readable(open(source).read()):
+  File "/usr/local/lib/python3.10/codecs.py", line 322, in decode
+    (result, consumed) = self._buffer_decode(data, self.errors, final)
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0x80 in position 3131: invalid start byte
+2024-04-02 09:16:36,862 - app - INFO - User input: 总结漏洞
+2024-04-02 09:16:36,891 - app - INFO - New file detected: interfaceList.txt
+2024-04-02 09:16:39,600 - app - INFO - Chatbot response: chat4summary

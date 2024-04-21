@@ -1,0 +1,5 @@
+build
+docker build -t chatbot-nsfocus .
+
+run
+docker run -d --name chatbot-nsfocus -p 55580:5000 -v $(pwd):/app chatbot-nsfocus

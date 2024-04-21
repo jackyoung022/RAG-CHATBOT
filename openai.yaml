@@ -1,0 +1,38 @@
+app:
+  config:
+    id: 'ibcs'
+
+llm:
+  provider: openai
+  config:
+    model: 'gpt-4-turbo-preview'
+    api_key: 'sk-xxx'
+    temperature: 0.5
+    max_tokens: 4096
+    top_p: 1
+    stream: false
+    number_documents: 2
+    prompt: |
+      If you don't know the answer, just say that you don't know, don't try to make up an answer. 
+      If you don't know, you can let the customer to contact with support@nsfocusglobal.com. 
+      Use the following pieces of context to answer the query at the end. Before answering, the context needs to be translated into the language used by the questioner.
+      $context
+      Query: $query, answer in English.
+      Helpful answer:
+vectordb:
+  provider: chroma
+  config:
+    collection_name: 'ibcs'
+    dir: db
+    allow_reset: true
+
+embedder:
+  provider: openai
+  config:
+    model: 'text-embedding-3-large'
+    api_key: 'sk-xxx'
+
+chunker:
+  chunk_size: 1000
+  chunk_overlap: 100
+  min_chunk_size: 200

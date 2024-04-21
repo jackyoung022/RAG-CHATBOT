@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NSFOCUS Chatbot</title>
+    <link rel="stylesheet" href="{{ url_for("static", filename="bootstrap/css/bootstrap.min.css" )}}">
+    <link rel="stylesheet" href="{{ url_for("static", filename="css/chatbot.css" )}}">
+    <script src="{{ url_for("static", filename="js/jquery-3.7.0-min.js" )}}"></script>
+    <link rel="stylesheet" href="{{ url_for("static", filename="bootstrap-icons/font/bootstrap-icons.css" )}}">
+</head>
+
+<body>
+    <div class="card" id="drag">
+        <div class="card-header">
+            <h4 class="card-title"><strong>ChatBot</strong></h4>
+        </div>
+
+
+        <div class="ps-container ps-theme-default ps-active-y" id="chat-content"
+            style="overflow-y: scroll !important; height:400px !important;">
+            <div class="media media-chat media-answer">
+                <img class="avatar" src="{{url_for("static", filename="img/nsfocus-icon.png" )}}"
+                    alt="...">
+                <div class="media-body">
+                    <p>Hi, what can I do for you?</p>
+                    <p>What I am learning now is the organizational structure of IBCS, questions and answers related to security testing services and Anti-DDoS products. If you have any related questions, please come and discuss with me.</p>
+                </div>
+            </div>
+
+
+
+            <div class="ps-scrollbar-x-rail" style="left: 0px; bottom: 0px;">
+                <div class="ps-scrollbar-x" tabindex="0" style="left: 0px; width: 0px;"></div>
+            </div>
+            <div class="ps-scrollbar-y-rail" style="top: 0px; height: 0px; right: 2px;">
+                <div class="ps-scrollbar-y" tabindex="0" style="top: 0px; height: 2px;"></div>
+            </div>
+        </div>
+
+        <div class="publisher bt-1 border-light">
+            <img class="avatar avatar-xs" src="{{ url_for('static', filename='img/user.svg' )}}" alt="...">
+            <input class="publisher-input" type="text" id="message" placeholder="Write something">
+            <span id="message-error"></span>
+            <a class="publisher-btn text-info" id="send" data-abc="true"><i class="bi bi-telegram"></i></a>
+        </div>
+    </div>
+</body>
+
+<script>
+    $(document).ready(function () {
+        // 发送消息的函数，避免代码重复
+        function sendMessage() {
+            var userMessage = $("#message").val().trim(); // 使用trim()移除字符串两端的空白字符
+
+            // 检查用户输入是否为空
+            if (userMessage === "") {
+                // 在这里显示“输入不能为空”的提示信息，颜色为红色
+                $("#message-error").text("Input can't be EMPTY!").css("color", "red").show();
+
+                $("#message").focus(); // 让输入框获得焦点
+
+                return; // 不继续执行发送消息的操作
+            } else {
+                $("#message-error").hide(); // 如果用户输入了内容，则隐藏错误信息
+            }
+
+            // 立即将用户消息添加到聊天内容中
+            $("#chat-content").append("<div class='media media-chat'><img class='avatar avatar-xs' src='{{ url_for('static', filename='img/user.svg')}}' alt='...'><div class='media-body'><p>" + userMessage + "</p></div></div>");
+            $("#message").val(""); // 立即清空输入框
+            $("#message").val("Wait bot reply...").prop('disabled', true);
+            scrollToBottom();
+            // 发送消息到后端
+            $.ajax({
+                url: "/chat",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ message: userMessage }),
+                success: function (response) {
+                    // 等待后端响应后再添加机器人的回复
+                    var formattedResponseMessage = response.response.replace(/\n/g, '<br>');
+                    $("#chat-content").append("<div class='media media-chat media-answer'><img class='avatar' src='{{url_for('static', filename='img/nsfocus-icon.png')}}' alt='...'> <div class='media-body'><p>" + formattedResponseMessage + "</p></div></div>");
+                    scrollToBottom();
+                },
+                complete: function () {
+                    // 无论请求成功或失败，都重新启用输入框，并清除等待信息
+                    $("#message").val("").prop('disabled', false).focus();
+                }
+            });
+        }
+
+        function scrollToBottom() {
+            var chatContent = $("#chat-content");
+            chatContent.scrollTop(chatContent.prop("scrollHeight"));
+        }
+        // 点击发送按钮时调用sendMessage函数
+        $("#send").click(function () {
+            sendMessage();
+        });
+
+        // 监听键盘事件
+        $("#message").keypress(function (event) {
+            // 检查按下的是否是Enter键且没有按住Shift键（keyCode为13代表Enter键）
+            if (event.keyCode === 13 && !event.shiftKey) {
+                event.preventDefault(); // 防止执行默认的换行操作
+                sendMessage();
+            }
+        });
+
+        var card = $('#drag');
+        var isDragging = false;
+        var offsetX, offsetY;
+
+        card.mousedown(function (e) {
+            // 检查事件的目标是否是<p>元素
+            if ($(e.target).is('p') || $(e.target).hasClass('publisher')) {
+                // 如果是，不启动拖动
+                return;
+            }
+            isDragging = true;
+            offsetX = e.clientX - card.offset().left;
+            offsetY = e.clientY - card.offset().top;
+            card.css('cursor', 'grabbing');
+        });
+
+        $(document).mousemove(function (e) {
+            if (!isDragging) return;
+
+            var moveX = e.clientX - offsetX;
+            var moveY = e.clientY - offsetY;
+
+            // 边界检查
+            const maxX = $(window).width() - card.outerWidth();
+            const maxY = $(window).height() - card.outerHeight();
+
+            // 不允许拖拽出界
+            moveX = Math.min(Math.max(0, moveX), maxX);
+            moveY = Math.min(Math.max(0, moveY), maxY);
+
+            card.css({
+                left: moveX,
+                top: moveY
+            });
+        }).mouseup(function () {
+            if (isDragging) {
+                isDragging = false;
+                card.css('cursor', 'grab');
+            }
+        });
+    });
+</script>
+
+</html>
